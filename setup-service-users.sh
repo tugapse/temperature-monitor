@@ -55,6 +55,7 @@ check_tool_installed() {
 setup_directory() {
     local dir_path="$1"
     local dir_description="$2"
+    local permissions="$3" # New argument for custom permissions
 
     log_info "Checking and configuring the $dir_description directory: '$dir_path'..."
 
@@ -79,12 +80,12 @@ setup_directory() {
         exit 1 # Exit if ownership cannot be set
     fi
 
-    chmod 770 "$dir_path" # Owner (user) and Group have full access
+    chmod "$permissions" "$dir_path" # Use custom permissions
     if [ $? -ne 0 ]; then
         log_error "CRITICAL FAILURE: Failed to set permissions for '$dir_path'. Check current permissions and if the user has sufficient privileges."
         exit 1 # Exit if permissions cannot be set
     fi
-    log_info "Permissions for '$dir_path' set successfully (owner: $MONITOR_USER, group: $MONITOR_GROUP, mode: 770)."
+    log_info "Permissions for '$dir_path' set successfully (owner: $MONITOR_USER, group: $MONITOR_GROUP, mode: $permissions)."
     log_info "You can verify permissions with: ls -ld $dir_path"
 }
 
@@ -219,14 +220,14 @@ else
     fi
 fi
 
-# 3. Configure Service Log Directory
-setup_directory "$SERVICE_LOG_DIR" "Service Log"
+# 3. Configure Service Log Directory (rwx for owner/group)
+setup_directory "$SERVICE_LOG_DIR" "Service Log" "770"
 
-# 4. Configure Main Data Log Path (now always the system path)
-setup_directory "$DATA_LOG_DIR" "System Data Log"
+# 4. Configure Main Data Log Path (rwx for owner/group, rx for others)
+setup_directory "$DATA_LOG_DIR" "System Data Log" "775"
 
 # 5. Configure Tools Base Directory
-setup_directory "$TOOLS_BASE_DIR" "Tools Base"
+setup_directory "$TOOLS_BASE_DIR" "Tools Base" "770"
 
 # 6. Clone and configure Python repositories to the tools directory
 for REPO_KEY in "${!PYTHON_REPOS[@]}"; do

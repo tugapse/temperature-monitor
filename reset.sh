@@ -8,6 +8,15 @@ COLOR_RED='\033[0;31m'
 COLOR_YELLOW='\033[0;33m' # Added yellow for warnings/info
 COLOR_NC='\033[0m' # No Color (reset)
 
+# Check if tput is available for dynamic color output
+if command -v tput >/dev/null 2>&1; then
+    COLOR_PROMPT="$(tput bold; tput setaf 6)" # Bold and bright cyan
+    COLOR_NC="$(tput sgr0)" # Reset all attributes
+else
+    # Fallback if tput is not available or non-interactive shell
+    COLOR_PROMPT='\033[1;36m' # Still try ANSI escape codes if tput is not there
+fi
+
 # --- Logging Functions ---
 log_info() {
     echo -e "${COLOR_GREEN}[INFO] $1${COLOR_NC}"
@@ -24,7 +33,8 @@ log_error() {
 # --- Confirmation Function ---
 confirm_action() {
     local message="$1"
-    read -p "$(log_warn "$message (Y/n)? ")" response
+    # Use COLOR_PROMPT directly for the read -p prompt to make it more obvious
+    read -p "${COLOR_PROMPT}[QUESTION] $message (Y/n)? ${COLOR_NC}" response
     # Treat empty response (Enter) as 'yes' by default
     response=${response:-Y} # If response is empty, set it to 'Y'
     case "$response" in
@@ -63,8 +73,8 @@ log_info "Preparation complete. The process will proceed in the current director
 # 1. Fully clean up any previous installation
 # ==============================================================================
 echo ""
-log_info "STEP 1/5: Removing the service and all previously installed components..."
-log_info "This includes stopping and disabling the systemd service, and deleting all scripts in /usr/local/bin/."
+echo -e "${COLOR_PROMPT}STEP 1/5: Removing the service and all previously installed components...${COLOR_NC}"
+echo -e "${COLOR_PROMPT}This includes stopping and disabling the systemd service, and deleting all scripts in /usr/local/bin/.${COLOR_NC}"
 if confirm_action "Continue with service removal"; then
     sudo ./temperature_monitor_service_manager.sh remove
     if [ $? -ne 0 ]; then
@@ -78,8 +88,8 @@ else
 fi
 
 echo ""
-log_info "STEP 2/5: Cleaning up log directories, tools directory, and removing the dedicated user/group."
-log_info "This will delete old temperature logs and cloned repositories, as well as the 'temperature_monitor_user' user."
+echo -e "${COLOR_PROMPT}STEP 2/5: Cleaning up log directories, tools directory, and removing the dedicated user/group.${COLOR_NC}"
+echo -e "${COLOR_PROMPT}This will delete old temperature logs and cloned repositories, as well as the 'temperature_monitor_user' user.${COLOR_NC}"
 if confirm_action "Continue with directory and user cleanup"; then
     sudo ./cleanup-setup-users.sh
     # Ensure the tools directory is completely clean, in case a failed clone left something behind.
@@ -99,9 +109,9 @@ fi
 # 2. Execute the setup script (reconfigures user, creates dirs, clones repos, installs venv)
 # ==============================================================================
 echo ""
-log_info "STEP 3/5: Reconfiguring the system."
-log_info "This step will re-create the service user and group, log and tools directories, CLONE the Python repositories (cpu-temp and gpu-temp) from GitHub, and install their dependencies (requirements.txt)."
-log_info "Data logs will be stored in '/var/lib/temperature-monitor/data'."
+echo -e "${COLOR_PROMPT}STEP 3/5: Reconfiguring the system.${COLOR_NC}"
+echo -e "${COLOR_PROMPT}This step will re-create the service user and group, log and tools directories, CLONE the Python repositories (cpu-temp and gpu-temp) from GitHub, and install their dependencies (requirements.txt).${COLOR_NC}"
+echo -e "${COLOR_PROMPT}Data logs will be stored in '/var/lib/temperature-monitor/data'.${COLOR_NC}"
 if confirm_action "Continue with system configuration"; then
     sudo ./setup-service-users.sh
     if [ $? -ne 0 ]; then
@@ -118,8 +128,8 @@ fi
 # 3. Ensure executable permissions for all local scripts
 # ==============================================================================
 echo ""
-log_info "STEP 4/5: Ensuring executable permissions for all local scripts."
-log_info "This is a safeguard to ensure the scripts can be copied and executed by the service."
+echo -e "${COLOR_PROMPT}STEP 4/5: Ensuring executable permissions for all local scripts.${COLOR_NC}"
+echo -e "${COLOR_PROMPT}This is a safeguard to ensure the scripts can be copied and executed by the service.${COLOR_NC}"
 if confirm_action "Continue setting executable permissions"; then
     chmod +x *.sh
     if [ $? -ne 0 ]; then
@@ -136,8 +146,8 @@ fi
 # 4. Install the service
 # ==============================================================================
 echo ""
-log_info "STEP 5/5: Installing and starting the monitoring service."
-log_info "This step will copy the scripts to /usr/local/bin/, configure systemd, and start the service."
+echo -e "${COLOR_PROMPT}STEP 5/5: Installing and starting the monitoring service.${COLOR_NC}"
+echo -e "${COLOR_PROMPT}This step will copy the scripts to /usr/local/bin/, configure systemd, and start the service.${COLOR_NC}"
 if confirm_action "Continue with service installation"; then
     sudo ./temperature_monitor_service_manager.sh install
     if [ $? -ne 0 ]; then
@@ -156,11 +166,11 @@ log_info "You can now check the service status:"
 sudo systemctl status temperature-monitor.service
 
 echo ""
-log_info "To view real-time logs, use:"
+log_info "To view real-time logs (requires sudo):"
 log_info "sudo journalctl -u temperature-monitor.service -f"
 echo ""
-log_info "To view CPU temperature logs, use:"
-log_info "sudo tail -f /var/lib/temperature-monitor/data/cpu_temp_output.log"
+log_info "To view CPU temperature logs (no sudo required after setup):"
+log_info "tail -f /var/lib/temperature-monitor/data/cpu_temp_output.log"
 echo ""
-log_info "To view GPU temperature logs, use:"
-log_info "sudo tail -f /var/lib/temperature-monitor/data/gpu_temp_output.log"
+log_info "To view GPU temperature logs (no sudo required after setup):"
+log_info "tail -f /var/lib/temperature-monitor/data/gpu_temp_output.log"
