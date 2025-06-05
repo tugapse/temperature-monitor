@@ -1,0 +1,19 @@
+[Unit]
+Description=Temperature Monitoring Service
+After=network.target
+
+[Service]
+ExecStart=/usr/local/bin/temperature-monitor-runner.sh
+Restart=always
+User=temperature_monitor_user
+Group=temperature_monitor_group
+StandardOutput=journal
+StandardError=journal
+# Adicionado: Define o intervalo em minutos. Padrão para 10 se não for definido externamente.
+Environment=TEMPERATURE_MONITOR_INTERVAL_MINUTES=10
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+
+[Install]
+WantedBy=multi-user.target
