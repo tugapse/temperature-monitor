@@ -20,8 +20,6 @@ WRAPPER_GPU_PATH="/usr/local/bin/$WRAPPER_GPU_DEST_NAME"
 PYTHON_SCRIPT_RUNNER_SOURCE="./python_script_runner.sh"
 PYTHON_SCRIPT_RUNNER_DEST="/usr/local/bin/python_script_runner.sh"
 
-# Default interval in minutes for the service. This will be injected into the .service file.
-DEFAULT_SERVICE_INTERVAL_MINUTES=10
 
 
 # --- Functions ---
@@ -114,20 +112,14 @@ install_service() {
     if [ $? -ne 0 ]; then log_error "Failed to set executable permissions for Python script runner. Exiting."; exit 1; fi
 
 
-    log_info "Copying '$SERVICE_NAME' to '$SERVICE_FILE_DEST' and patching environment variables..."
+    log_info "Copying '$SERVICE_NAME' to '$SERVICE_FILE_DEST'..."
     cp "$SERVICE_FILE_SOURCE" "$SERVICE_FILE_DEST"
     if [ $? -ne 0 ]; then
         log_error "Failed to copy service file. Exiting."
         exit 1
     fi
 
-    # Patch the service file to set the monitoring interval
-    log_info "Injecting TEMPERATURE_MONITOR_INTERVAL_MINUTES=$DEFAULT_SERVICE_INTERVAL_MINUTES into service file."
-    sed -i "/^# Environment=TEMPERATURE_MONITOR_INTERVAL_MINUTES=/cEnvironment=TEMPERATURE_MONITOR_INTERVAL_MINUTES=$DEFAULT_SERVICE_INTERVAL_MINUTES" "$SERVICE_FILE_DEST"
-    if [ $? -ne 0 ]; then
-        log_error "Failed to patch service file with TEMPERATURE_MONITOR_INTERVAL_MINUTES. Manual edit may be needed."
-    fi
-
+ 
     log_info "Reloading systemd daemon..."
     systemctl daemon-reload
     if [ $? -ne 0 ]; then
