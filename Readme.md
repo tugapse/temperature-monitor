@@ -38,11 +38,11 @@ TEMP-MONITOR/
 └── temperature-monitor.service             # Systemd service definition
 ```
 
-## Getting Started
+## **Getting Started**
 
-To install and manage this temperature monitoring service, please refer to the following detailed guides located in the `docs/` directory:
+To install and manage this temperature monitoring service, please refer to the following detailed guides located in the docs/ directory:
 
-*   Installation Guide: Learn how to set up your system, install the service, and understand the rationale behind each step.
-*   Usage Guide: Discover how to interact with the service, view logs, and customize its behavior.
-*   Troubleshooting Guide: Find solutions to common issues and debugging tips.
-*   Cleanup Guide: Instructions for completely removing the service and all its associated files.
+* [**Installation Guide**](https://github.com/tugapse/temperature-monitor/blob/master/docs/Install.md): Learn how to set up your system, install the service, and understand the rationale behind each step.  
+* [**Usage Guide**](https://github.com/tugapse/temperature-monitor/blob/master/docs/Usage.md): Discover how to interact with the service, view logs, and customize its behavior.  
+* [**Troubleshooting Guide**](https://github.com/tugapse/temperature-monitor/blob/master/docs/Troubleshooting.md): Find solutions to common issues and debugging tips.  
+* [**Cleanup Guide**](https://github.com/tugapse/temperature-monitor/blob/master/docs/Clean.md): Instructions for completely removing the service and all its associated files.
