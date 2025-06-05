@@ -1,15 +1,15 @@
 #!/bin/bash
-# Wrapper script para o projeto Python gpu-temp.
-# Este script 'sources' a lógica comum para ativar um ambiente virtual e executar main.py.
+# Wrapper script for the gpu-temp Python project.
+# This script sources common logic to activate a virtual environment and execute main.py.
 
-# Definir o nome único do repositório para este wrapper
+# Define the unique repository name for this wrapper
 REPO_NAME="gpu-temp"
 
-# 'Source' a lógica comum do executor de script Python
-# O caminho é onde temperature_monitor_service_manager.sh o copiará.
+# Source the common Python script runner logic
+# The path is where temperature_monitor_service_manager.sh will copy it.
 source "/usr/local/bin/python_script_runner.sh"
 
-# Chamar a função do script 'sourced' para executar o projeto Python.
-# Passar todos os argumentos recebidos por este script wrapper.
+# Call the function from the sourced script to run the Python project.
+# Pass all arguments received by this wrapper script.
 run_python_project "$@"
-exit $? # Sair com o código de saída da função chamada
+exit $? # Exit with the exit code of the called function

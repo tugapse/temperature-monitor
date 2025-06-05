@@ -9,7 +9,7 @@ User=temperature_monitor_user
 Group=temperature_monitor_group
 StandardOutput=journal
 StandardError=journal
-# Adicionado: Define o intervalo em minutos. Padrão para 10 se não for definido externamente.
+# Sets the interval in minutes. Defaults to 10 if not set externally.
 Environment=TEMPERATURE_MONITOR_INTERVAL_MINUTES=10
 StartLimitIntervalSec=60
 StartLimitBurst=5

@@ -1,99 +1,98 @@
-# Este script foi concebido para ser 'sourced' por outros scripts wrapper.
-# Ele fornece uma função para ativar um ambiente virtual e executar um script Python,
-# assumindo que o projeto e o seu ambiente virtual já estão configurados em TOOLS_BASE_DIR.
+# This script is designed to be 'sourced' by other wrapper scripts.
+# It provides a function to activate a virtual environment and execute a Python script,
+# assuming the project and its virtual environment are already configured in TOOLS_BASE_DIR.
 
-# --- Configuração Comum ---
-# Diretório base onde os repositórios Python são clonados.
-# Este deve corresponder a TOOLS_BASE_DIR em setup-service-users.sh.
+# --- Common Configuration ---
+# Base directory where Python repositories are cloned.
+# This should match TOOLS_BASE_DIR in setup-service-users.sh.
 COMMON_TOOLS_BASE_DIR="/usr/local/bin/tools"
 
-# --- Funções Comuns ---
+# --- Common Functions ---
 
-# Função para registar mensagens (para o registo interno dos scripts wrapper que o 'sourcing')
-# Requer que a variável 'REPO_NAME' esteja definida no script que o 'sourcing'.
+# Function to log messages (for the internal logging of the sourcing wrapper scripts)
+# Requires the 'REPO_NAME' variable to be defined in the sourcing script.
 log_wrapper_message() {
     local type="$1"
     local message="$2"
-    # A saída para stderr pode ser capturada por run.sh e direcionada para out.log
+    # Output to stderr can be captured by run.sh and directed to out.log
     echo "$(date '+%Y-%m-%d %H:%M:%S') [WRAPPER-${REPO_NAME}-$type] $message" >&2
 }
 
-# Função para verificar se um comando existe
+# Function to check if a command exists
 command_exists () {
     command -v "$1" >/dev/null 2>&1
 }
 
-# Função principal para executar um projeto Python
-# Esta função deve ser chamada pelos scripts wrapper individuais.
-# Requer que a variável 'REPO_NAME' seja definida no script que o 'sourcing' antes de chamar esta função.
-# Argumentos: "$@" - todos os argumentos passados para o script wrapper original.
+# Main function to run a Python project
+# This function should be called by individual wrapper scripts.
+# Requires the 'REPO_NAME' variable to be defined in the sourcing script before calling this function.
+# Arguments: "$@" - all arguments passed to the original wrapper script.
 run_python_project() {
-    # Caminhos derivados com base em REPO_NAME
+    # Derived paths based on REPO_NAME
     local project_dir="$COMMON_TOOLS_BASE_DIR/$REPO_NAME"
     local venv_dir="$project_dir/.venv"
     local main_script="$project_dir/main.py"
 
-    log_wrapper_message "DEBUG" "Caminho do Projeto: $project_dir"
-    log_wrapper_message "DEBUG" "Caminho do Venv: $venv_dir"
-    log_wrapper_message "DEBUG" "Caminho do Script Principal: $main_script"
-    log_wrapper_message "DEBUG" "Utilizador atual: $(whoami)"
-    log_wrapper_message "DEBUG" "PATH atual: $PATH"
+    log_wrapper_message "DEBUG" "Project Path: $project_dir"
+    log_wrapper_message "DEBUG" "Venv Path: $venv_dir"
+    log_wrapper_message "DEBUG" "Main Script Path: $main_script"
+    log_wrapper_message "DEBUG" "Current user: $(whoami)"
+    log_wrapper_message "DEBUG" "Current PATH: $PATH"
 
-    # --- Verificações de Pré-execução ---
-    # Garante que as ferramentas essenciais estão disponíveis (verificação extra de robustez)
+    # --- Pre-execution Checks ---
+    # Ensure essential tools are available (extra robustness check)
     if ! command_exists python3; then
-        log_wrapper_message "ERROR" "'python3' não está instalado. Por favor, instale o python para continuar (ex: sudo pacman -S python)."
+        log_wrapper_message "ERROR" "'python3' is not installed. Please install python to continue (e.g., sudo pacman -S python)."
         exit 1
     fi
 
-    # Verificar se o diretório do projeto e o ambiente virtual existem
+    # Check if the project directory and virtual environment exist
     if [ ! -d "$project_dir" ]; then
-        log_wrapper_message "ERROR" "Diretório do projeto Python '$project_dir' não encontrado. Ele deveria ter sido clonado e configurado por 'setup-service-users.sh'."
+        log_wrapper_message "ERROR" "Python project directory '$project_dir' not found. It should have been cloned and configured by 'setup-service-users.sh'."
         exit 1
     fi
     if [ ! -d "$venv_dir" ]; then
-        log_wrapper_message "ERROR" "Ambiente virtual Python '$venv_dir' não encontrado dentro do projeto '$project_dir'. Ele deveria ter sido criado por 'setup-service-users.sh'."
+        log_wrapper_message "ERROR" "Python virtual environment '$venv_dir' not found inside project '$project_dir'. It should have been created by 'setup-service-users.sh'."
         exit 1
     fi
     if [ ! -f "$main_script" ]; then
-        log_wrapper_message "ERROR" "Script principal Python '$main_script' não encontrado. Verifique se o repositório foi clonado corretamente por 'setup-service-users.sh'."
+        log_wrapper_message "ERROR" "Main Python script '$main_script' not found. Verify the repository was cloned correctly by 'setup-service-users.sh'."
         exit 1
     fi
 
-    # Verificar permissões do venv e do script principal
+    # Check venv and main script permissions
     if [ ! -r "$venv_dir/bin/activate" ]; then
-        log_wrapper_message "ERROR" "Ficheiro de ativação do ambiente virtual '$venv_dir/bin/activate' não é legível. Verifique as permissões."
+        log_wrapper_message "ERROR" "Virtual environment activation file '$venv_dir/bin/activate' is not readable. Check permissions."
         exit 1
     fi
     if [ ! -x "$venv_dir/bin/python" ]; then
-        log_wrapper_message "ERROR" "Executável Python do ambiente virtual '$venv_dir/bin/python' não é executável. Verifique as permissões."
+        log_wrapper_message "ERROR" "Virtual environment Python executable '$venv_dir/bin/python' is not executable. Check permissions."
         exit 1
     fi
     if [ ! -r "$main_script" ]; then
-        log_wrapper_message "ERROR" "Script Python principal '$main_script' não é legível. Verifique as permissões."
+        log_wrapper_message "ERROR" "Main Python script '$main_script' is not readable. Check permissions."
         exit 1
     fi
 
 
-    # --- Ativar Ambiente Virtual ---
-    log_wrapper_message "INFO" "A ativar o ambiente virtual para execução."
-    # IMPORTANTE: Usar 'bash -c "source ... && command"' para garantir que a ativação acontece
-    # dentro de um subshell que depois executa o Python, se houver problemas com 'source' direto.
-    # No entanto, vamos tentar o 'source' direto primeiro para ver o erro exato se este continuar.
+    # --- Activate Virtual Environment ---
+    log_wrapper_message "INFO" "Activating virtual environment for execution."
+    # IMPORTANT: Using 'source' directly is preferred when running from a script
+    # that is itself executed by bash (like a systemd service running a bash script).
     source "$venv_dir/bin/activate"
     if [ $? -ne 0 ]; then
-        log_wrapper_message "ERROR" "Falha CRÍTICA ao ativar o ambiente virtual em '$venv_dir/bin/activate'. Isto pode ser devido a permissões ou um ambiente bash limitado."
+        log_wrapper_message "ERROR" "CRITICAL Failure activating virtual environment at '$venv_dir/bin/activate'. This might be due to permissions or a limited bash environment."
         exit 1
     fi
 
-    # --- Executar Script Python Principal ---
-    log_wrapper_message "INFO" "A executar '$main_script' com argumentos: '$@'"
+    # --- Execute Main Python Script ---
+    log_wrapper_message "INFO" "Executing '$main_script' with arguments: '$@'"
     python "$main_script" "$@"
-    local python_script_exit_code=$? # Capturar o código de saída do script Python
+    local python_script_exit_code=$? # Capture the exit code of the Python script
 
-    # --- Desativar Ambiente Virtual ---
+    # --- Deactivate Virtual Environment ---
     deactivate
-    log_wrapper_message "INFO" "Ambiente virtual desativado."
+    log_wrapper_message "INFO" "Virtual environment deactivated."
 
-    return $python_script_exit_code # Retornar o código de saída do script Python
+    return $python_script_exit_code # Return the Python script's exit code
 }

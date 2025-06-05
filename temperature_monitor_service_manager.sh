@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# --- Configuração ---
+# --- Configuration ---
 SERVICE_NAME="temperature-monitor.service"
 SERVICE_FILE_SOURCE="./$SERVICE_NAME"
 SERVICE_FILE_DEST="/etc/systemd/system/$SERVICE_NAME"
@@ -24,9 +24,9 @@ PYTHON_SCRIPT_RUNNER_DEST="/usr/local/bin/python_script_runner.sh"
 DEFAULT_SERVICE_INTERVAL_MINUTES=10
 
 
-# --- Funções ---
+# --- Functions ---
 
-# Função para registar mensagens para stdout
+# Function to log messages to stdout
 log_info() {
     echo "[INFO] $1"
 }
@@ -35,9 +35,9 @@ log_error() {
     echo "[ERROR] $1" >&2
 }
 
-# --- Lógica Principal do Script ---
+# --- Main Script Logic ---
 
-# Verificar se o script é executado como root
+# Check if the script is run as root
 if [[ $EUID -ne 0 ]]; then
    log_error "This script must be run as root. Please use 'sudo ./temperature_monitor_service_manager.sh [install|remove]'"
    exit 1
@@ -48,7 +48,7 @@ fi
 #     exit 1
 # fi
 
-# Função para instalar o serviço
+# Function to install the service
 install_service() {
     log_info "Attempting to install '$SERVICE_NAME' and associated scripts..."
 
